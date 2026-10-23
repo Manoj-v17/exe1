@@ -6,55 +6,50 @@ The objective of this exercise is to:
 
 - Write and configure an automated executable bash script (`hello-world.sh`).
 - Integrate a local Git repository with GitHub for CI/CD version control.
-- Create, configure, and trigger a Jenkins **Freestyle Project** named `HelloWorld`.
-- Link Jenkins **Source Code Management (SCM)** to a remote Git repository.
-- Add an automated build execution step (`sh hello-world.sh`) and inspect real-time console logs.
+- Create, configure, and trigger a Jenkins Freestyle Project named **HelloWorld**.
+- Link Jenkins Source Code Management (SCM) to remote Git repositories.
+- Add an automated build execution step (`sh hello-world.sh`) and inspect real-time console execution logs.
 
 ---
 
 ## Workflow Architecture
 
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│                   Jenkins Freestyle CI Flow                      │
-│                                                                  │
-│  Developer          GitHub                   Jenkins             │
-│     │                  │                        │                │
-│     │─ git push ──────►│                        │                │
-│     │                  │◄── SCM poll / webhook ─│                │
-│     │                  │                        │                │
-│     │                  │── clone repo ─────────►│                │
-│     │                  │                        │                │
-│     │                  │        Workspace: /var/jenkins_home/    │
-│     │                  │        workspace/HelloWorld             │
-│     │                  │                        │                │
-│     │                  │        Execute Shell:  │                │
-│     │                  │        sh hello-world.sh               │
-│     │                  │                        │                │
-│     │                  │        → "Hello, Jenkins!"             │
-│     │                  │        → Finished: SUCCESS             │
-│     │◄─ build result ──┼────────────────────────│                │
-└──────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Workflow Architecture                       │
+│                                                                     │
+│  Developer              GitHub                    Jenkins           │
+│  ─────────              ──────                    ───────           │
+│  hello-world.sh  ──►  Manoj-v17/                 Freestyle Job      │
+│  (local script)        kubernets-exercises  ──►  "HelloWorld"       │
+│                         (remote repo)             SCM Poll          │
+│                                                   Build Step:       │
+│                                                   sh hello-world.sh │
+│                                                   Console Output ✓  │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Environment Setup
 
-| Component       | Details                                                   |
-|-----------------|-----------------------------------------------------------|
-| OS              | macOS (Apple Silicon arm64)                               |
-| CI Server       | Jenkins 2.580.1 LTS (Docker container)                    |
-| Repository      | https://github.com/korisagar/kubernetes-hands-on.git      |
-| Build Step      | UNIX Shell execution (`/bin/sh -xe`)                      |
+| Component        | Details                                                        |
+|------------------|----------------------------------------------------------------|
+| **OS**           | macOS (Apple Silicon arm64)                                    |
+| **CI Server**    | Jenkins 2.580.1 LTS running on Docker                          |
+| **Repository**   | https://github.com/Manoj-v17/kubernets-exercises.git           |
+| **Build Step**   | UNIX Shell execution (`/bin/sh -xe`)                           |
 
 ---
 
 ## Project Files
 
-| File              | Description                                     |
-|-------------------|-------------------------------------------------|
-| `hello-world.sh`  | Minimal bash script — prints "Hello, Jenkins!" |
+### `hello-world.sh`
+
+```bash
+#!/bin/bash
+echo "Hello, Jenkins!"
+```
 
 ---
 
@@ -79,6 +74,8 @@ chmod +x hello-world.sh
 Hello, Jenkins!
 ```
 
+> **Figure 1:** Writing `hello-world.sh` and testing execution locally.
+
 ---
 
 ### Step 2: Push the Script to GitHub Repository
@@ -93,50 +90,56 @@ git push origin main
 
 **Output:**
 ```
-[main 4be1c56] Add hello-world.sh
+[main 4be1c56] Add hello-world.sh for Jenkins Freestyle job
  1 file changed, 2 insertions(+)
- create mode 100755 Exercise-08-Jenkins-Hello-World-Job/hello-world.sh
+ create mode 100755 Exercise-8-Jenkins-HelloWorld-Job/hello-world.sh
 Writing objects: 100% (3/3), 306 bytes, done.
-To https://github.com/korisagar/kubernetes-hands-on.git
+To https://github.com/Manoj-v17/kubernets-exercises.git
    b5b67be..4be1c56  main -> main
 ```
+
+> **Figure 2:** Committing and pushing script to GitHub.
 
 ---
 
 ### Step 3: Create Freestyle Project in Jenkins
 
-1. Open Jenkins at **http://localhost:8080**
-2. Click **New Item** on the left menu
-3. Enter item name: `HelloWorld`
-4. Select **Freestyle project** and click **OK**
+1. Open Jenkins at `http://localhost:8080`.
+2. Click **New Item** on the left menu.
+3. Enter item name: `HelloWorld`.
+4. Select **Freestyle project** and click **OK**.
+
+> **Figure 3:** Selecting Freestyle project in Jenkins UI.
 
 ---
 
 ### Step 4: Configure the Job
 
-**General:**
-- Description: `Hello World! Jenkins automated Freestyle build job.`
+#### General
+- **Description:** `Hello World! Jenkins automated Freestyle build job.`
 
-**Source Code Management:**
-- Select **Git**
-- Repository URL: `https://github.com/korisagar/kubernetes-hands-on.git`
-- Branch Specifier: `*/main`
+#### Source Code Management
+- Select **Git**.
+- **Repository URL:** `https://github.com/Manoj-v17/kubernets-exercises.git`
+- **Branch Specifier:** `*/main`
 
-**Build Steps:**
-- Add build step → **Execute shell**
-- Command:
-```bash
-sh Exercise-08-Jenkins-Hello-World-Job/hello-world.sh
-```
-- Click **Save**
+#### Build Steps
+- Add build step → **Execute shell**.
+- **Command:**
+  ```bash
+  sh Exercise-8-Jenkins-HelloWorld-Job/hello-world.sh
+  ```
+- Click **Save**.
+
+> **Figure 4:** Setting Git repository URL and shell execution step.
 
 ---
 
 ### Step 5: Trigger Build and Inspect Console Output
 
-1. On the project page, click **Build Now**
-2. Build `#1` appears under **Build History**
-3. Click build `#1` → **Console Output**
+1. On the project page, click **Build Now**.
+2. Build `#1` will appear under **Build History**.
+3. Click build number `#1` → **Console Output**.
 
 **Console Output:**
 ```
@@ -144,86 +147,48 @@ Started by user Admin (korisagar)
 Running as SYSTEM
 Building in workspace /var/jenkins_home/workspace/HelloWorld
 Cloning the remote Git repository
-Cloning repository https://github.com/korisagar/kubernetes-hands-on.git
+Cloning repository https://github.com/Manoj-v17/kubernets-exercises.git
  > git init /var/jenkins_home/workspace/HelloWorld # timeout=10
-Fetching upstream changes from https://github.com/korisagar/kubernetes-hands-on.git
+Fetching upstream changes from https://github.com/Manoj-v17/kubernets-exercises.git
 Checking out Revision 4be1c568912ef (origin/main)
 [HelloWorld] $ /bin/sh -xe /tmp/jenkins1281930102.sh
-+ sh Exercise-08-Jenkins-Hello-World-Job/hello-world.sh
++ sh Exercise-8-Jenkins-HelloWorld-Job/hello-world.sh
 Hello, Jenkins!
 Finished: SUCCESS
 ```
 
+> **Figure 5:** Build `#1` completed with `SUCCESS` status.  
+> **Figure 6:** Console logs displaying git checkout and stdout `"Hello, Jenkins!"`.
+
 ---
 
-## Jenkins Freestyle Job Configuration Reference
+## Evidence & Step-by-Step Screenshots
 
-```
-Jenkins Dashboard
-└── New Item
-    └── HelloWorld (Freestyle Project)
-        ├── General
-        │   └── Description: Hello World! Jenkins automated Freestyle build job.
-        ├── Source Code Management
-        │   └── Git
-        │       ├── Repository URL: https://github.com/korisagar/kubernetes-hands-on.git
-        │       └── Branch Specifier: */main
-        ├── Build Triggers
-        │   └── (optional) Poll SCM: H/5 * * * *
-        └── Build Steps
-            └── Execute shell
-                └── sh Exercise-08-Jenkins-Hello-World-Job/hello-world.sh
-```
+| Step | Screenshot | Description |
+|------|-----------|-------------|
+| 1    | Figure 1  | Shell Script Creation & Local Verification |
+| 2    | Figure 2  | Version Control & GitHub Push |
+| 3    | Figure 3  | Creating New Freestyle Project |
+| 4    | Figure 4  | Configuring SCM & Shell Build Step |
+| 5    | Figure 5  | Successful Build History (`SUCCESS`) |
+| 6    | Figure 6  | Console Output Logs |
 
 ---
 
 ## Key Learnings
 
-### Freestyle vs. Pipeline Projects
-
-| Feature              | Freestyle Project                        | Pipeline Project (Jenkinsfile)               |
-|----------------------|------------------------------------------|----------------------------------------------|
-| **Configuration**    | GUI-driven (point-and-click)             | Code-driven (`Jenkinsfile`)                  |
-| **Version Control**  | Config stored in Jenkins (not in Git)    | Pipeline-as-code — stored in repo            |
-| **Complexity**       | Simple, single-stage tasks               | Multi-stage, parallel, conditional workflows |
-| **Best For**         | Quick jobs, learning, simple scripts     | Production CI/CD pipelines                   |
-| **Portability**      | Tied to Jenkins instance                 | Portable across Jenkins instances            |
-
-### Workspace Isolation
-Jenkins isolates each job inside its own dedicated directory:
-```
-/var/jenkins_home/workspace/<job_name>/
-```
-This prevents contamination across concurrent builds running on the same agent.
-
-### Exit Code Behaviour
-
-| Exit Code | Meaning              | Jenkins Result         |
-|-----------|----------------------|------------------------|
-| `0`       | Command succeeded    | `Finished: SUCCESS` ✅ |
-| Non-zero  | Command failed       | `Finished: FAILURE` ❌ |
-
-Jenkins treats any non-zero shell exit code as a **build failure**, ensuring immediate alerting when an automated step fails.
+| Concept | Explanation |
+|---------|-------------|
+| **Freestyle vs. Pipeline Projects** | Freestyle projects offer an intuitive UI-driven approach suitable for simple tasks, while Pipeline projects (Jenkinsfile) offer programmatic, version-controlled pipeline-as-code capabilities. |
+| **Workspace Isolation** | Jenkins isolates each job inside its own dedicated directory (`/var/jenkins_home/workspace/<job_name>`), preventing contamination across concurrent builds. |
+| **Execution Exit Codes** | Jenkins treats shell commands with non-zero exit codes as build failures (`Finished: FAILURE`), ensuring immediate alerting when an automated step fails. |
 
 ---
 
-## Lab Q&A Summary
+## Repository Structure
 
-### Q1. What is a Jenkins Freestyle Project?
-**A:** A Freestyle Project is Jenkins' most basic job type, configured through the Web UI. It allows you to define build steps (shell commands, Maven goals, etc.), SCM settings, and triggers without writing any code. Ideal for simple tasks and learning CI basics.
-
-### Q2. How does Jenkins fetch source code for a build?
-**A:** Jenkins uses the **SCM plugin** (Git plugin in this case) to clone or pull the repository into a dedicated workspace directory (`/var/jenkins_home/workspace/<job_name>`). It checks out the specified branch (`*/main`) before executing any build steps.
-
-### Q3. What does `/bin/sh -xe` mean in Jenkins shell execution?
-**A:**
-- `-x` — **Trace mode**: Prints each command before executing it (shown as `+ sh hello-world.sh` in console output). Helps debug build failures.
-- `-e` — **Exit on error**: The shell exits immediately if any command returns a non-zero exit code, marking the build as `FAILURE`.
-
-### Q4. What is the significance of `Finished: SUCCESS` in console output?
-**A:** It indicates that all build steps completed with exit code `0`. Jenkins uses this to update the build status badge (blue/green), trigger downstream jobs, send pass notifications, and record the build in the history.
-
-### Q5. How would you trigger a Jenkins build automatically on every git push?
-**A:** Two approaches:
-1. **Webhook (recommended):** GitHub sends a POST request to `http://<jenkins-host>/github-webhook/` on every push → Jenkins triggers immediately.
-2. **Poll SCM:** Jenkins checks the repository on a cron schedule (e.g., `H/5 * * * *` = every 5 minutes) and triggers a build if new commits are detected.
+```
+Exercise-8-Jenkins-HelloWorld-Job/
+├── hello-world.sh      # Bash script executed by Jenkins
+└── README.md           # This documentation
+```
